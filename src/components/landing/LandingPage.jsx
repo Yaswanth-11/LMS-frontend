@@ -1,317 +1,225 @@
+// src/components/landing/LandingPage.jsx
 import React, { useState } from "react";
-import { addToast } from "../common/Toasts";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../../custom.css"; // keep your styles
+import {
+  Calendar,
+  Trophy,
+  BookOpen,
+  Users,
+  Zap,
+  ChevronRight,
+  Star,
+  Rocket,
+} from "lucide-react";
+import AuthModal from "./AuthModal";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
+import FeatureCard from "./FeatureCard";
+import StatsGrid from "./StatsGrid";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const features = [
+  {
+    icon: Calendar,
+    title: "Daily Challenges",
+    description:
+      "Real-world problems that test creativity and practical skills, not just textbook knowledge",
+    color: "primary",
+  },
+  {
+    icon: BookOpen,
+    title: "Tech Stories",
+    description:
+      "Learn from tech history and explore future innovations with curated content",
+    color: "purple",
+  },
+  {
+    icon: Trophy,
+    title: "College Leaderboards",
+    description:
+      "Compete with peers, showcase your skills, and build your academic reputation",
+    color: "warning",
+  },
+  {
+    icon: Users,
+    title: "Professional Network",
+    description:
+      "Connect with students, professors, and industry mentors in your field",
+    color: "success",
+  },
+];
+
+const stats = [
+  { number: "10K+", label: "Active Students", icon: Users },
+  { number: "500+", label: "Daily Challenges", icon: Calendar },
+  { number: "100+", label: "Partner Colleges", icon: Trophy },
+  { number: "95%", label: "Career Success", icon: Star },
+];
+
+const getFeatureClass = (color) => {
+  const styles = {
+    primary: "bg-primary text-white",
+    purple: "bg-purple text-white",
+    warning: "bg-warning text-dark",
+    success: "bg-success text-white",
+  };
+  return styles[color] || styles.primary;
+};
 
 const LandingPage = () => {
   const [showAuth, setShowAuth] = useState(false);
-  const [activeTab, setActiveTab] = useState("login");
-  const [loading, setLoading] = useState(false);
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    college: "",
-  });
-
-  const handleInput = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  };
-
-  const switchTab = (tab) => {
-    setActiveTab(tab);
-    setForm({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      college: "",
-    });
-  };
-
-  const validate = () => {
-    if (activeTab === "register") {
-      if (!form.name.trim()) return addToast("Name is required", "warning");
-      if (!form.email.trim()) return addToast("Email is required", "warning");
-      if (!form.password.trim())
-        return addToast("Password required", "warning");
-      if (form.password !== form.confirmPassword)
-        return addToast("Passwords do not match", "warning");
-    } else {
-      if (!form.email.trim() || !form.password.trim())
-        return addToast("Email & password required", "warning");
-    }
-    return true;
-  };
-
-  const handleSubmit = async () => {
-    if (!validate()) return;
-
-    setLoading(true);
-
-    try {
-      const endpoint =
-        activeTab === "login"
-          ? `${API_URL}/api/auth/login`
-          : `${API_URL}/api/auth/register`;
-
-      const payload =
-        activeTab === "login"
-          ? { email: form.email, password: form.password }
-          : {
-              name: form.name,
-              email: form.email,
-              password: form.password,
-              confirmPassword: form.confirmPassword,
-              college: form.college,
-              role: "student",
-            };
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Authentication failed");
-      }
-
-      addToast(
-        activeTab === "login"
-          ? "Login successful!"
-          : "Registration successful! Check your email.",
-        "success"
-      );
-
-      window.location.href = "/dashboard";
-    } catch (err) {
-      addToast(err.message, "danger");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [authMode, setAuthMode] = useState("login"); // or 'register'
 
   return (
-    <>
-      {/* NAVBAR */}
+    <div className="bg-dark text-light">
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark py-3">
         <div className="container">
-          <span className="navbar-brand fw-bold">⚡ Teckspark Daily</span>
-
-          <button
-            className="btn btn-outline-light me-2"
-            onClick={() => {
-              setShowAuth(true);
-              switchTab("login");
-            }}
-          >
-            Login
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setShowAuth(true);
-              switchTab("register");
-            }}
-          >
-            Get Started
-          </button>
+          <a className="navbar-brand d-flex align-items-center" href="/">
+            <Zap className="me-2 floating-animation" /> Teckspark Daily
+          </a>
+          <div>
+            <button
+              className="btn btn-outline-light me-2"
+              onClick={() => {
+                setAuthMode("login");
+                setShowAuth(true);
+              }}
+            >
+              Login
+            </button>
+            <button
+              className="btn btn-gradient"
+              onClick={() => {
+                setAuthMode("register");
+                setShowAuth(true);
+              }}
+            >
+              Get Started
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="bg-dark text-light py-5">
-        <div className="container text-center">
-          <h1 className="display-4 fw-bold">
-            Build Your <span className="text-primary">Tech Future</span>
-          </h1>
-          <p className="lead mt-3 mx-auto" style={{ maxWidth: "700px" }}>
-            Daily coding challenges, tech stories, and college leaderboards —
-            designed to elevate your skills and career.
-          </p>
+      <main>
+        <section className="hero-section text-center py-5 container">
+          <div className="hero-animation">
+            <div className="hero-badge">
+              <Star size={16} /> Join 10,000+ Tech Enthusiasts
+            </div>
+            <h1 className="display-4 fw-bold mb-4">
+              Build Your <span className="text-gradient">Tech Future</span>
+              <br />
+              One Challenge at a Time
+            </h1>
+            <p
+              className="lead mb-5 text-light-50"
+              style={{ maxWidth: 800, margin: "0 auto" }}
+            >
+              Join thousands of students solving real-world problems, reading
+              tech stories, and competing on college leaderboards. Transform
+              your learning into career success.
+            </p>
+            <div className="d-flex justify-content-center gap-3 flex-wrap">
+              <button
+                className="btn btn-gradient btn-lg d-flex align-items-center px-4"
+                onClick={() => {
+                  setAuthMode("register");
+                  setShowAuth(true);
+                }}
+              >
+                Start Your Journey{" "}
+                <Rocket className="ms-2 floating-animation" />
+              </button>
+              <button className="btn btn-outline-light btn-lg d-flex align-items-center px-4">
+                Watch Demo <ChevronRight className="ms-2" />
+              </button>
+            </div>
+          </div>
+        </section>
 
-          <div className="mt-4">
+        <section className="container py-5">
+          <StatsGrid stats={stats} />
+        </section>
+
+        <section className="container py-5">
+          <div className="text-center mb-5">
+            <h2 className="display-6 fw-bold mb-3">
+              Why Choose Teckspark Daily?
+            </h2>
+            <p
+              className="lead text-light-50"
+              style={{ maxWidth: 600, margin: "0 auto" }}
+            >
+              Experience learning that prepares you for real-world success
+            </p>
+          </div>
+
+          <div className="row g-4">
+            {features.map((f, i) => (
+              <div key={i} className="col-md-6 col-lg-3">
+                <FeatureCard
+                  Icon={f.icon}
+                  title={f.title}
+                  description={f.description}
+                  styleClass={getFeatureClass(f.color)}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-gradient py-5">
+          <div className="container text-center py-4">
+            <h2 className="display-6 fw-bold mb-4">
+              Ready to Transform Your Tech Journey?
+            </h2>
+            <p
+              className="lead mb-4"
+              style={{ maxWidth: 700, margin: "0 auto" }}
+            >
+              Join thousands of students who are already building their careers
+              through daily challenges and tech stories.
+            </p>
             <button
-              className="btn btn-primary btn-lg me-3"
+              className="btn btn-light btn-lg d-inline-flex align-items-center px-4"
               onClick={() => {
+                setAuthMode("register");
                 setShowAuth(true);
-                switchTab("register");
               }}
             >
-              Join Now
-            </button>
-            <button className="btn btn-outline-light btn-lg">
-              Watch Demo →
+              Join Teckspark Daily <Star className="ms-2 floating-animation" />
             </button>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* FEATURES */}
-      <section className="container py-5">
-        <h2 className="text-center fw-bold mb-4">Why Teckspark Daily?</h2>
-
-        <div className="row g-4 text-center">
-          <div className="col-md-3">
-            <div className="card shadow-sm p-3">
-              <h5 className="fw-bold">Daily Challenges</h5>
-              <p>Level up with real-world coding problems.</p>
-            </div>
-          </div>
-
-          <div className="col-md-3">
-            <div className="card shadow-sm p-3">
-              <h5 className="fw-bold">Tech Stories</h5>
-              <p>Stay inspired with curated tech knowledge.</p>
-            </div>
-          </div>
-
-          <div className="col-md-3">
-            <div className="card shadow-sm p-3">
-              <h5 className="fw-bold">Leaderboards</h5>
-              <p>Compete and showcase your college ranking.</p>
-            </div>
-          </div>
-
-          <div className="col-md-3">
-            <div className="card shadow-sm p-3">
-              <h5 className="fw-bold">Community</h5>
-              <p>Connect with students and tech mentors.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* AUTH MODAL */}
-      {showAuth && (
-        <div
-          className="modal fade show"
-          tabIndex="-1"
-          style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowAuth(false);
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title fw-bold">
-                  {activeTab === "login" ? "Login" : "Create Account"}
-                </h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setShowAuth(false)}
-                ></button>
-              </div>
-
-              <div className="modal-body">
-                {/* Tabs */}
-                <div className="btn-group w-100 mb-3">
-                  <button
-                    className={`btn ${
-                      activeTab === "login"
-                        ? "btn-primary"
-                        : "btn-outline-primary"
-                    }`}
-                    onClick={() => switchTab("login")}
-                  >
-                    Login
-                  </button>
-                  <button
-                    className={`btn ${
-                      activeTab === "register"
-                        ? "btn-primary"
-                        : "btn-outline-primary"
-                    }`}
-                    onClick={() => switchTab("register")}
-                  >
-                    Register
-                  </button>
-                </div>
-
-                {/* FORM FIELDS */}
-                {activeTab === "register" && (
-                  <>
-                    <div className="mb-3">
-                      <label className="form-label">Full Name</label>
-                      <input
-                        className="form-control"
-                        name="name"
-                        onChange={handleInput}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">College</label>
-                      <input
-                        className="form-control"
-                        name="college"
-                        onChange={handleInput}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="mb-3">
-                  <label className="form-label">Email Address</label>
-                  <input
-                    className="form-control"
-                    name="email"
-                    type="email"
-                    onChange={handleInput}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Password</label>
-                  <input
-                    className="form-control"
-                    name="password"
-                    type="password"
-                    onChange={handleInput}
-                  />
-                </div>
-
-                {activeTab === "register" && (
-                  <div className="mb-3">
-                    <label className="form-label">Confirm Password</label>
-                    <input
-                      className="form-control"
-                      name="confirmPassword"
-                      type="password"
-                      onChange={handleInput}
-                    />
-                  </div>
-                )}
-
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span>
-                      <span className="spinner-border spinner-border-sm me-2"></span>
-                      Processing...
-                    </span>
-                  ) : activeTab === "login" ? (
-                    "Login"
-                  ) : (
-                    "Register"
-                  )}
-                </button>
+      <footer className="bg-dark text-muted py-5">
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-md-6 mb-4 mb-md-0">
+              <div className="d-flex align-items-center">
+                <Zap className="me-2 floating-animation" />
+                <span className="fw-bold">Teckspark Daily</span>
               </div>
             </div>
+            <div className="col-md-6 text-md-end">
+              <small className="text-light-50">
+                © {new Date().getFullYear()} Teckspark Daily. Empowering the
+                next generation of tech leaders.
+              </small>
+            </div>
           </div>
         </div>
-      )}
-    </>
+      </footer>
+
+      <AuthModal
+        show={showAuth}
+        onClose={() => setShowAuth(false)}
+        title={authMode === "login" ? "Welcome Back" : "Join Teckspark"}
+      >
+        {authMode === "login" ? <LoginForm /> : <RegisterForm />}
+      </AuthModal>
+    </div>
   );
 };
 
